@@ -30,6 +30,7 @@ const dotenvFiles = [
   // results for everyone
   NODE_ENV !== 'test' && `${paths.dotenv}.local`,
   `${paths.dotenv}.${NODE_ENV}`,
+  // 当前根目录下的 .env 路径
   paths.dotenv,
 ].filter(Boolean);
 
@@ -38,6 +39,8 @@ const dotenvFiles = [
 // that have already been set.  Variable expansion is supported in .env files.
 // https://github.com/motdotla/dotenv
 // https://github.com/motdotla/dotenv-expand
+// start 下先加载所有 env ，后在 getClientEnvironment 时候将所有非 REACT_APP_ 开头的变量去除
+// prod 下只加载全部 env ，不做处理
 dotenvFiles.forEach(dotenvFile => {
   if (fs.existsSync(dotenvFile)) {
     require('dotenv-expand')(
@@ -64,6 +67,8 @@ process.env.NODE_PATH = (process.env.NODE_PATH || '')
   .map(folder => path.resolve(appDirectory, folder))
   .join(path.delimiter);
 
+
+  // 需要以 REACT_APP_ 开头
 // Grab NODE_ENV and REACT_APP_* environment variables and prepare them to be
 // injected into the application via DefinePlugin in webpack configuration.
 const REACT_APP = /^REACT_APP_/i;

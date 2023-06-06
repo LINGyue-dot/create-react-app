@@ -42,6 +42,7 @@ const createDevServerConfig = require('../config/webpackDevServer.config');
 const getClientEnvironment = require('../config/env');
 const react = require(require.resolve('react', { paths: [paths.appPath] }));
 
+// 
 const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1));
 const useYarn = fs.existsSync(paths.yarnLockFile);
 const isInteractive = process.stdout.isTTY;
@@ -99,6 +100,15 @@ checkBrowsers(paths.appPath, isInteractive)
       paths.publicUrlOrPath.slice(0, -1)
     );
     // Create a webpack compiler that is configured with custom messages.
+    /**
+     * 这个 Compiler 实例代表了整个打包过程的核心，它负责管理各种插件和加载器，并执行打包操作。
+      通过调用 webpack(config) 返回的 Compiler 实例，你可以执行各种操作，例如：
+      调用 compiler.run(callback) 来执行一次完整的打包过程。
+      调用 compiler.watch(options, callback) 来监视文件变化并自动重新打包。
+      注册各种插件，例如 compiler.plugin(name, callback) 注册插件的钩子函数。
+      获取 Webpack 配置信息，例如 compiler.options 可以获取完整的配置对象。
+      总而言之，调用 webpack(config) 返回的 Compiler 实例是与打包过程进行交互的主要接口，你可以通过它来控制和定制你的打包行为。
+     */
     const compiler = createCompiler({
       appName,
       config,
@@ -120,6 +130,7 @@ checkBrowsers(paths.appPath, isInteractive)
       host: HOST,
       port,
     };
+    // 
     const devServer = new WebpackDevServer(serverConfig, compiler);
     // Launch WebpackDevServer.
     devServer.startCallback(() => {
@@ -138,7 +149,11 @@ checkBrowsers(paths.appPath, isInteractive)
       console.log(chalk.cyan('Starting the development server...\n'));
       openBrowser(urls.localUrlForBrowser);
     });
+    // sigint sigterm
 
+    // 进程退出事件
+    // sigint == ctrl + c
+    // sigterm == 外部程序的终止信号
     ['SIGINT', 'SIGTERM'].forEach(function (sig) {
       process.on(sig, function () {
         devServer.close();
@@ -148,6 +163,7 @@ checkBrowsers(paths.appPath, isInteractive)
 
     if (process.env.CI !== 'true') {
       // Gracefully exit when stdin ends
+      // ctrl + d 输入结束
       process.stdin.on('end', function () {
         devServer.close();
         process.exit();

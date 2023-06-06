@@ -100,6 +100,12 @@ function printInstructions(appName, urls, useYarn) {
   console.log();
 }
 
+
+/**
+ * 主要是 webpack() 返回，以及添加上 hook 监听
+ * @param {*} param0 
+ * @returns 
+ */
 function createCompiler({
   appName,
   config,
@@ -125,6 +131,7 @@ function createCompiler({
   // recompiling a bundle. WebpackDevServer takes care to pause serving the
   // bundle, so if you refresh, it'll wait instead of serving the old one.
   // "invalid" is short for "bundle invalidated", it doesn't imply any errors.
+  // 在文件变动时候自动执行
   compiler.hooks.invalid.tap('invalid', () => {
     if (isInteractive) {
       clearConsole();
