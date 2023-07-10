@@ -23,6 +23,7 @@ const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 // single-page apps that may serve index.html for nested URLs like /todos/42.
 // We can't use a relative path in HTML because we don't want to load something
 // like /todos/42/static/js/bundle.7289d.js. We have to know the root.
+// dev 下没有 homepage ，就是 /
 const publicUrlOrPath = getPublicUrlOrPath(
   process.env.NODE_ENV === 'development',
   require(resolveApp('package.json')).homepage,
@@ -114,6 +115,10 @@ const ownPackageJson = require('../package.json');
 const reactScriptsPath = resolveApp(`node_modules/${ownPackageJson.name}`);
 const reactScriptsLinked =
   fs.existsSync(reactScriptsPath) &&
+  /**
+    * fs.lstatSync(reactScriptsPath) 返回指定路径的文件状态（metadata），其中包括文件类型、大小、创建时间等信息。这是一个同步方法，可阻塞代码执行，直到调用完成并返回结果。
+    isSymbolicLink() 是返回文件状态中 stats.isSymbolicLink() 的值，用于判断指定路径是否为符号链接。如果返回 true，则表示该文件为符号链接，否则表示该文件为普通文件或目录。符号链接是一种特殊的文件类型，它可以链接到另一个目录或文件，可用于实现软链接、快捷方式等功能。
+   */
   fs.lstatSync(reactScriptsPath).isSymbolicLink();
 
 // config before publish: we're in ./packages/react-scripts/config/
@@ -123,6 +128,7 @@ if (
 ) {
   const templatePath = '../cra-template/template';
   module.exports = {
+    // 索引到 packages/cra-template 去了
     dotenv: resolveOwn(`${templatePath}/.env`),
     appPath: resolveApp('.'),
     appBuild: resolveOwn(path.join('../..', buildPath)),

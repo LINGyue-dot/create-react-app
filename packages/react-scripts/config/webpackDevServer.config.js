@@ -96,6 +96,7 @@ module.exports = function (proxy, allowedHost) {
       // we specified in the webpack config. When homepage is '.', default to serving
       // from the root.
       // remove last slash so user can land on `/test` instead of `/test/`
+      // dev 下没有 homepage ==> publicPath : ''
       publicPath: paths.publicUrlOrPath.slice(0, -1),
     },
 
