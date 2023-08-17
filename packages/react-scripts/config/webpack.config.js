@@ -241,9 +241,13 @@ module.exports = function (webpackEnv) {
     },
     cache: {
       type: 'filesystem',
+      // verison 变化时候，会认为缓存过期
+      // 属于最上层，即 version 变化时候，node_module/.cache 中的缓存全部失效，如 babel-loader 等缓存也不再使用
       version: createEnvironmentHash(env.raw),
+      // 这里设置了缓存路径 node_modules/.cache
       cacheDirectory: paths.appWebpackCache,
       store: 'pack',
+      // cache.buildDependencies 是一个针对 「构建」 的额外代码依赖的数组对象。webpack 将使用这些项和所有依赖项的哈希值来使文件系统缓存失效。
       buildDependencies: {
         defaultWebpack: ['webpack/lib/'],
         config: [__filename],
@@ -432,11 +436,15 @@ module.exports = function (webpackEnv) {
                 // @remove-on-eject-begin
                 babelrc: false,
                 configFile: false,
+                // 
                 // Make sure we have a unique cache identifier, erring on the
                 // side of caution.
                 // We remove this when the user ejects because the default
                 // is sane and uses Babel options. Instead of options, we use
                 // the react-scripts and babel-preset-react-app versions.
+                // 返回一个环境 + [] 包中版本组成的 unqiue id
+                // cacheIdentifier ：用于区分不同 babel 编译配置用于缓存隔离，确保修改了 babel 配置能重新生成缓存
+                // 例如：cacheIdentifier 的值从 a 改为 b ，此时 /node_modules/.cache/babel-loader 会有两份缓存
                 cacheIdentifier: getCacheIdentifier(
                   isEnvProduction
                     ? 'production'
@@ -465,6 +473,7 @@ module.exports = function (webpackEnv) {
             },
             // Process any JS outside of the app with Babel.
             // Unlike the application JS, we only compile the standard ES features.
+            // TODO：loader 执行自下而上，这里 babel-loader 执行的不是整个项目吗？为什么不是先 loader src 下的 ts tsx 文件呢？
             {
               test: /\.(js|mjs)$/,
               exclude: /@babel(?:\/|\\{1,2})runtime/,
@@ -704,6 +713,9 @@ module.exports = function (webpackEnv) {
       }),
       // Generate a service worker script that will precache, and keep up to date,
       // the HTML & assets that are part of the webpack build.
+      // 如果有 swSrc 文件的话
+      // WorkboxWebpackPlugin.InjectManifest 是 Workbox 提供的 Webpack 插件之一，用于将预缓存清单（precache manifest）注入到生成的服务工作线程（service worker）文件中。
+      // 当你使用 Workbox 来实现离线缓存和缓存策略时，你可以通过 WorkboxWebpackPlugin.InjectManifest 插件来自动将预缓存清单注入到生成的服务工作线程文件中，以便在应用程序启动时缓存所需的资源。
       isEnvProduction &&
         fs.existsSync(swSrc) &&
         new WorkboxWebpackPlugin.InjectManifest({
